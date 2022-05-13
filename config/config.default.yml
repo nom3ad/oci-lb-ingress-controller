@@ -1,0 +1,9 @@
+auth:
+useInstancePrincipals: true
+loadBalancer:
+# Optional rate limit controls for accessing OCI API
+rateLimiter:
+  rateLimitQPSRead: 20.0
+  rateLimitBucketRead: 5
+  rateLimitQPSWrite: 20.0
+  rateLimitBucketWrite: 5

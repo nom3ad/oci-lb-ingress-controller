@@ -1,0 +1,98 @@
+#       --docker-password='_D08bsXgi1<(SI2KTqd1' \
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oci-lb-ingress-controller
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: oci-lb-ingress-controller
+  name: oci-lb-ingress-controller-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oci-lb-ingress-controller-cr
+  namespace: oci-lb-ingress-controller
+rules:
+  - apiGroups: [""]
+    verbs: [get, list, watch]
+    resources: [configmaps, endpoints, nodes, pods, namespaces, secrets]
+  - apiGroups: [""]
+    verbs: [get]
+    resources: [nodes]
+  - apiGroups: [""]
+    verbs: [get, list, watch]
+    resources: [services]
+  - apiGroups: [extensions, networking.k8s.io]
+    verbs: [get, list, watch]
+    resources: [ingresses]
+  - apiGroups: [""]
+    verbs: [create, patch]
+    resources: [events]
+  - apiGroups: [extensions, networking.k8s.io]
+    verbs: [update]
+    resources: [ingresses/status]
+  - apiGroups: [networking.k8s.io]
+    verbs: [get, list, watch]
+    resources: [ingressclasses]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: oci-lb-ingress-controller-crbinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: oci-lb-ingress-controller-cr
+subjects:
+  - kind: ServiceAccount
+    name: oci-lb-ingress-controller-sa
+    namespace: oci-lb-ingress-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oci-lb-ingress-controller
+  namespace: oci-lb-ingress-controller
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oci-lb-ingress-controller
+      app.kubernetes.io/component: controller
+  revisionHistoryLimit: 10
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oci-lb-ingress-controller
+        app.kubernetes.io/component: controller
+    spec:
+      containers:
+        - name: controller
+          image: syd.ocir.io/sdz5ctxy4jzk/oci-lb-ingress-controller:latest
+          imagePullPolicy: Always
+          args:
+            - -config=/app/config.yml
+            - -ingress-class=oci
+            - -controller-name=ingress.beta.kubernetes.io/oci
+            # - -default-subnets=${ingress_load_balancer_subnet_ocid}
+          env:
+            - name: ZAP_DEV_LOGGER
+              value: "true"
+            - name: ZAP_LOG_LEVEL
+              value: "debug"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 80Mi
+            limits:
+              cpu: 500m
+              memory: 200Mi
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: oci-lb-ingress-controller-sa
+      terminationGracePeriodSeconds: 100

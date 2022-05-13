@@ -1,0 +1,11 @@
+.vscode/**
+
+vendor
+bin
+
+*.tmp
+tmp
+
+# dev config file
+config.yml
+__debug_bin
