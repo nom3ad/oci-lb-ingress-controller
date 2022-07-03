@@ -51,7 +51,7 @@ func New(ociClient ociclient.Interface, conf configholder.ConfigHolder, controll
 // GetLoadBalancerByName will fetch a load balancer with a given display name if it exists
 func (mgr *lbManager) tryGetLoadBalancerByNamespacedName(ctx context.Context, namespacedName types.NamespacedName, logger *zap.SugaredLogger) (*loadbalancer.LoadBalancer, error) {
 	loadBalancerName := ingress.GetLoadBalancerName(namespacedName.Namespace, namespacedName.Name)
-	compartmentID := mgr.conf.GetComapartmentId()
+	compartmentID := mgr.conf.GetCompartmentId()
 	logger.With("loadBalancerName", loadBalancerName).With("compartment", compartmentID).Debug("Get LB by name")
 	if lb, err := mgr.client.LoadBalancer().GetLoadBalancerByName(ctx, compartmentID, loadBalancerName); err != nil {
 		// { "code": "NotAuthorizedOrNotFound", "message": "Authorization failed or requested resource not found.", "status": 404 }
@@ -149,7 +149,7 @@ func (mgr *lbManager) UpdateOrCreateIngress(ing *networking.Ingress) error {
 
 func (mgr *lbManager) updateIngressStatus(ingress *networking.Ingress, lb *loadbalancer.LoadBalancer) error {
 	if len(lb.IpAddresses) == 0 || lb.IpAddresses[0].IpAddress == nil {
-		return fmt.Errorf("couldnot update Ingres status: No IP found")
+		return fmt.Errorf("could not update Ingres status: No IP found")
 	}
 	ingress.Status.LoadBalancer.Ingress = []corev1.LoadBalancerIngress{
 		{
@@ -158,7 +158,7 @@ func (mgr *lbManager) updateIngressStatus(ingress *networking.Ingress, lb *loadb
 		},
 	}
 	if err := mgr.k8sClient.Status().Update(context.Background(), ingress); err != nil {
-		return fmt.Errorf("couldnot update Ingres status: %v", err)
+		return fmt.Errorf("could not update Ingres status: %v", err)
 	}
 	return nil
 }
@@ -167,7 +167,7 @@ func (mgr *lbManager) updateIngressStatus(ingress *networking.Ingress, lb *loadb
 func (mgr *lbManager) createLoadBalancer(ctx context.Context, spec *ingress.IngressLBSpec) (*loadbalancer.LoadBalancer, error) {
 	logger := mgr.logger.With("loadBalancerName", spec.Name)
 	createDetails := loadbalancer.CreateLoadBalancerDetails{
-		CompartmentId: utils.PtrToString(mgr.conf.GetComapartmentId()),
+		CompartmentId: utils.PtrToString(mgr.conf.GetCompartmentId()),
 		DisplayName:   &spec.Name,
 		ShapeName:     &spec.Shape,
 		IsPrivate:     &spec.Internal,
@@ -240,7 +240,7 @@ func (mgr *lbManager) createLoadBalancer(ctx context.Context, spec *ingress.Ingr
 func (mgr *lbManager) updateLoadBalancer(ctx context.Context, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) (*loadbalancer.LoadBalancer, error) {
 	logger := mgr.logger.With("loadBalancerID", *lb.Id).With("loadBalancerName", lb.DisplayName)
 
-	ad := &ActionDispacther{ctx: ctx, logger: logger}
+	ad := &ActionDispatcher{ctx: ctx, logger: logger}
 	mgr.enqueueRoutingPoliciesActions(ad, lb, spec)
 	mgr.enqueueRuleSetsActions(ad, lb, spec)
 	mgr.enqueueHostnameActions(ad, lb, spec)
@@ -272,7 +272,7 @@ func (mgr *lbManager) updateLoadBalancer(ctx context.Context, lb *loadbalancer.L
 	return lb, nil
 }
 
-func (mgr *lbManager) enqueueRoutingPoliciesActions(ad *ActionDispacther, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
+func (mgr *lbManager) enqueueRoutingPoliciesActions(ad *ActionDispatcher, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
 	lbOcid := *lb.Id
 	ctx := ad.Context()
 	logger := ad.Logger()
@@ -335,7 +335,7 @@ func (mgr *lbManager) enqueueRoutingPoliciesActions(ad *ActionDispacther, lb *lo
 
 }
 
-func (mgr *lbManager) enqueueRuleSetsActions(ad *ActionDispacther, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
+func (mgr *lbManager) enqueueRuleSetsActions(ad *ActionDispatcher, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
 	lbOcid := *lb.Id
 	ctx := ad.Context()
 	logger := ad.Logger()
@@ -393,7 +393,7 @@ func (mgr *lbManager) enqueueRuleSetsActions(ad *ActionDispacther, lb *loadbalan
 	}
 }
 
-func (mgr *lbManager) enqueueHostnameActions(ad *ActionDispacther, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
+func (mgr *lbManager) enqueueHostnameActions(ad *ActionDispatcher, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
 	lbOcid := *lb.Id
 	ctx := ad.Context()
 	logger := ad.Logger()
@@ -434,11 +434,11 @@ func (mgr *lbManager) enqueueHostnameActions(ad *ActionDispacther, lb *loadbalan
 
 }
 
-func (mgr *lbManager) enqueueCertificateActions(ad *ActionDispacther, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
+func (mgr *lbManager) enqueueCertificateActions(ad *ActionDispatcher, lb *loadbalancer.LoadBalancer, spec *ingress.IngressLBSpec) {
 	lbOcid := *lb.Id
 	ctx := ad.Context()
 	logger := ad.Logger()
-	// toBeUpdated (intersection list) should be empty always, as certificate name consists of a hash derived from certifcate contents.
+	// toBeUpdated (intersection list) should be empty always, as certificate name consists of a hash derived from certificate contents.
 	toBeCreated, toBeRemoved, toBeUpdated := utils.MapCompare(spec.Certificates, lb.Certificates, func(fromSpec, fromLb interface{}) bool {
 		return utils.StructsAreEqualForKeys(fromSpec, fromLb, "PublicCertificate", "CaCertificate")
 	})

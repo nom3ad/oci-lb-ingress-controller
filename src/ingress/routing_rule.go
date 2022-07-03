@@ -103,7 +103,7 @@ func createHostnameCondition(host string) string {
 
 	if strings.HasPrefix(host, "*.") {
 		// return fmt.Sprintf("http.request.headers[(i 'Host')] ew (i '%s')", host[2:])
-		//XXX: OCI LB doesnot support ew/sw matchers on Map Type values. Gets an err: invalid operand types for matcher IREndsWithMatcher, left: IRStringListValue, right: IRStringValue
+		//XXX: OCI LB does not support ew/sw matchers on Map Type values. Gets an err: invalid operand types for matcher IREndsWithMatcher, left: IRStringListValue, right: IRStringValue
 		// But it would be okay to not have Host header matching rule, because we have listener configured with correct wildcard hostname
 		return ""
 	}

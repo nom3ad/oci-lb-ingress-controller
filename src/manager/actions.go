@@ -31,13 +31,13 @@ func (a action) do() error {
 	return a.fn()
 }
 
-type ActionDispacther struct {
+type ActionDispatcher struct {
 	ctx      context.Context
 	logger   *zap.SugaredLogger
 	_actions []action
 }
 
-func (ad *ActionDispacther) allSubjects() []interface{} {
+func (ad *ActionDispatcher) allSubjects() []interface{} {
 	var subjects []interface{}
 	for _, a := range ad._actions {
 		for _, s := range subjects {
@@ -51,15 +51,15 @@ func (ad *ActionDispacther) allSubjects() []interface{} {
 	return subjects
 }
 
-func (ad *ActionDispacther) Context() context.Context {
+func (ad *ActionDispatcher) Context() context.Context {
 	return ad.ctx
 }
 
-func (ad *ActionDispacther) Logger() *zap.SugaredLogger {
+func (ad *ActionDispatcher) Logger() *zap.SugaredLogger {
 	return ad.logger
 }
 
-func (ad *ActionDispacther) Run(verb ActionVerb, subjects ...interface{}) error {
+func (ad *ActionDispatcher) Run(verb ActionVerb, subjects ...interface{}) error {
 	if (len(subjects)) == 0 {
 		subjects = ad.allSubjects()
 	}
@@ -77,7 +77,7 @@ func (ad *ActionDispacther) Run(verb ActionVerb, subjects ...interface{}) error 
 	return nil
 }
 
-func (ad *ActionDispacther) AddFunc(verb ActionVerb, subject interface{}, fn func() error) {
+func (ad *ActionDispatcher) AddFunc(verb ActionVerb, subject interface{}, fn func() error) {
 	ad._actions = append(ad._actions, (action{
 		verb:    verb,
 		subject: subject,

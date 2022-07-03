@@ -52,7 +52,7 @@ func main() {
 	logger.Sugar().Info("Reading config from ", *configPath)
 	conf, err := providercfg.FromFile(*configPath)
 	if err != nil {
-		logger.Sugar().Fatalf("Couldnot load config from %s: %s", *configPath, err)
+		logger.Sugar().Fatalf("Could not load config from %s: %s", *configPath, err)
 	}
 	logger.Sugar().Debugf("Loaded config: %+v", conf)
 
@@ -83,10 +83,10 @@ func main() {
 		"DefaultLBShape", ingress.DefaultLBShape, "DefaultFlexShapeMinMbps", ingress.DefaultFlexShapeMinMbps,
 		"DefaultFlexShapeMaxMbps", ingress.DefaultFlexShapeMaxMbps).Info("Settings")
 
-	// Start ingress contoller
+	// Start ingress controller
 	logger.Sugar().With("kubernetes.io/ingress.class", ingress.OCILoadbalancerIngressClass, "controllerName", controller.ControllerName).Infof("Starting ingress controller")
 	if err := controller.Run(conf, logger); err != nil {
-		logger.Sugar().Fatal("Failed to start contoller: ", err)
+		logger.Sugar().Fatal("Failed to start controller: ", err)
 	}
 	logger.Info("Exiting ingress controller")
 }

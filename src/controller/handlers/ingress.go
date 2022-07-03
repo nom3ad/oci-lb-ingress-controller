@@ -24,7 +24,7 @@ type ingressEventHandler struct {
 	logger *zap.Logger
 }
 
-// Create is a handler called when an integress object is created
+// Create is a handler called when an ingress object is created
 func (h *ingressEventHandler) Create(evt event.CreateEvent, queue workqueue.RateLimitingInterface) {
 	if ing, ok := evt.Object.(*networking.Ingress); ok && ing != nil {
 		h.enqueueIfIngressClassMatched(ing, queue, "IngressCreateEvent")
@@ -33,7 +33,7 @@ func (h *ingressEventHandler) Create(evt event.CreateEvent, queue workqueue.Rate
 	}
 }
 
-// Update is a handler called when an integress object is updated
+// Update is a handler called when an ingress object is updated
 func (h *ingressEventHandler) Update(evt event.UpdateEvent, queue workqueue.RateLimitingInterface) {
 	if oldIng, ok := evt.ObjectNew.(*networking.Ingress); ok && oldIng != nil {
 		h.enqueueIfIngressClassMatched(oldIng, queue, "IngressUpdateEvent")
@@ -48,7 +48,7 @@ func (h *ingressEventHandler) Update(evt event.UpdateEvent, queue workqueue.Rate
 	}
 }
 
-// Delete is a handler called when an integress object is deleted
+// Delete is a handler called when an ingress object is deleted
 func (h *ingressEventHandler) Delete(evt event.DeleteEvent, queue workqueue.RateLimitingInterface) {
 	if ing, ok := evt.Object.(*networking.Ingress); ok && ing != nil {
 		h.enqueueIfIngressClassMatched(ing, queue, "IngressDeleteEvent")
@@ -57,7 +57,7 @@ func (h *ingressEventHandler) Delete(evt event.DeleteEvent, queue workqueue.Rate
 	}
 }
 
-// Generic is a handler called when an integress object is modified but none of the above
+// Generic is a handler called when an ingress object is modified but none of the above
 func (h *ingressEventHandler) Generic(evt event.GenericEvent, queue workqueue.RateLimitingInterface) {
 	if ing, ok := evt.Object.(*networking.Ingress); ok && ing != nil {
 		h.enqueueIfIngressClassMatched(ing, queue, "IngressGenericEvent")

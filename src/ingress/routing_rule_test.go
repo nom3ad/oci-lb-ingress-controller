@@ -9,7 +9,7 @@ import (
 )
 
 func TestProcessImplementationSpecificPath(t *testing.T) {
-	assertSuccessfullRule := func(path, expectedCondition string) {
+	assertSuccessfulRule := func(path, expectedCondition string) {
 		condition, err := processImplementationSpecificPath(path)
 		if assert.NoError(t, err, "path=%q", path) {
 			assert.Equal(t, expectedCondition, condition, "path=%q", path)
@@ -21,26 +21,26 @@ func TestProcessImplementationSpecificPath(t *testing.T) {
 			assert.Contains(t, err.Error(), errorString, "path=%q", path)
 		}
 	}
-	assertSuccessfullRule("condition:somerawcondition", "somerawcondition")
+	assertSuccessfulRule("condition:somerawcondition", "somerawcondition")
 	assertInvalidRule("condition:", "Invalid path")
 
 	assertInvalidRule("", "Invalid path")
 
 	// Simple path match
-	assertSuccessfullRule("/example", "all(http.request.url.path eq '/example')")
-	assertSuccessfullRule("/", "all(http.request.url.path eq '/')")
+	assertSuccessfulRule("/example", "all(http.request.url.path eq '/example')")
+	assertSuccessfulRule("/", "all(http.request.url.path eq '/')")
 
 	// Valid wild cards
-	assertSuccessfullRule("/example/*", "all(http.request.url.path sw '/example/')")
-	assertSuccessfullRule("/example*", "all(http.request.url.path sw '/example')")
-	assertSuccessfullRule("*/example", "all(http.request.url.path ew '/example')")
-	assertSuccessfullRule("*/example/", "all(http.request.url.path ew '/example/')")
-	assertSuccessfullRule("*example/", "all(http.request.url.path ew 'example/')")
-	assertSuccessfullRule("*example", "all(http.request.url.path ew 'example')")
-	assertSuccessfullRule("*example*", "all(http.request.url.path cw 'example')")
-	assertSuccessfullRule("first*last", "all(http.request.url.path sw 'first', http.request.url.path ew 'last')")
-	assertSuccessfullRule(".*", "all(http.request.url.path sw '.')")
-	assertSuccessfullRule("*.*", "all(http.request.url.path cw '.')")
+	assertSuccessfulRule("/example/*", "all(http.request.url.path sw '/example/')")
+	assertSuccessfulRule("/example*", "all(http.request.url.path sw '/example')")
+	assertSuccessfulRule("*/example", "all(http.request.url.path ew '/example')")
+	assertSuccessfulRule("*/example/", "all(http.request.url.path ew '/example/')")
+	assertSuccessfulRule("*example/", "all(http.request.url.path ew 'example/')")
+	assertSuccessfulRule("*example", "all(http.request.url.path ew 'example')")
+	assertSuccessfulRule("*example*", "all(http.request.url.path cw 'example')")
+	assertSuccessfulRule("first*last", "all(http.request.url.path sw 'first', http.request.url.path ew 'last')")
+	assertSuccessfulRule(".*", "all(http.request.url.path sw '.')")
+	assertSuccessfulRule("*.*", "all(http.request.url.path cw '.')")
 
 	// Invalid wild cards
 	assertInvalidRule("fi*rst*last", "Invalid path")
@@ -50,8 +50,8 @@ func TestProcessImplementationSpecificPath(t *testing.T) {
 	assertInvalidRule("*/exam*ple", "Invalid path")
 
 	// abnormal path components
-	assertSuccessfullRule("/#", "all(http.request.url.path eq '/')") // TODO: fix
-	assertSuccessfullRule("ss\\", "all(http.request.url.path eq 'ss\\')")
+	assertSuccessfulRule("/#", "all(http.request.url.path eq '/')") // TODO: fix
+	assertSuccessfulRule("ss\\", "all(http.request.url.path eq 'ss\\')")
 	assertInvalidRule("/#xx", "Invalid path")
 
 	assertInvalidRule("http://", "Invalid path")

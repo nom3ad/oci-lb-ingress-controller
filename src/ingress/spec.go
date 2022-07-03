@@ -247,7 +247,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 				return nil, errors.Wrapf(err, "Could not deduce routing rule. host: %s | backendSet: %s | path: %v", host, backendSetName, ingPath)
 			}
 			if utils.ContainsMatching(httpRoutingRules, func(r loadbalancer.RoutingRule) bool { return *r.Name == *routingRule.Name }) {
-				logger.Sugar().With("host", host, "routingPolicyRule", routingRule.Name).Warn("Ingoring duplicate routing policy")
+				logger.Sugar().With("host", host, "routingPolicyRule", routingRule.Name).Warn("Ignoring duplicate routing policy")
 			} else {
 				httpRoutingRules = append(httpRoutingRules, *routingRule)
 			}
@@ -281,7 +281,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 		listeners[listenerName] = listener
 	}
 
-	// httpBackned = httpBackned
+	// httpBackend = httpBackend
 	if ing.Spec.DefaultBackend != nil {
 		// From OCI docs:  https://docs.oracle.com/en-us/iaas/Content/Balance/Tasks/hostname_management.htm
 		// LB Default Listener
@@ -293,7 +293,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 			return nil, err
 		}
 
-		listenerName, listener := createDeafultBackendListenerDetails(backendSetName)
+		listenerName, listener := createDefaultBackendListenerDetails(backendSetName)
 		listeners[listenerName] = listener
 
 		defaultBackendRoutingRule, err := createDeafultBackendRoutingRule(backendSetName)
@@ -427,7 +427,7 @@ func getLoadBalancerSubnetIds(config configholder.ConfigHolder, ing *networking.
 }
 
 func setupBackendSetsForSpec(spec *IngressLBSpec, ing *networking.Ingress, logger *zap.Logger) error {
-	backendSetDeatils := map[string]loadbalancer.BackendSetDetails{}
+	backendSetDetails := map[string]loadbalancer.BackendSetDetails{}
 
 	loadbalancerPolicy, err := getLoadBalancerPolicy(ing)
 	if err != nil {
@@ -442,11 +442,11 @@ func setupBackendSetsForSpec(spec *IngressLBSpec, ing *networking.Ingress, logge
 			return err
 		}
 		for name, backendset := range backendSetList {
-			backendSetDeatils[name] = backendset
+			backendSetDetails[name] = backendset
 		}
 	}
 
-	backendSetDeatils[DummyBackendSetName] = loadbalancer.BackendSetDetails{ // TODO
+	backendSetDetails[DummyBackendSetName] = loadbalancer.BackendSetDetails{ // TODO
 		Policy:   utils.PtrToString(loadbalancerPolicy),
 		Backends: []loadbalancer.BackendDetails{},
 		HealthChecker: &loadbalancer.HealthCheckerDetails{
@@ -459,6 +459,6 @@ func setupBackendSetsForSpec(spec *IngressLBSpec, ing *networking.Ingress, logge
 			Retries:          utils.PtrToInt(3),
 		},
 	}
-	spec.BackendSets = backendSetDeatils
+	spec.BackendSets = backendSetDetails
 	return nil
 }

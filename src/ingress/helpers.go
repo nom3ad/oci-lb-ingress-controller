@@ -84,7 +84,7 @@ func createListenerDetailsAndRulesetDetailsForHTTPSRedirect(hostnameNames []stri
 	return rulesetName, ruleSet, listenerName, listener
 }
 
-func createDeafultBackendListenerDetails(targetBackendSetName string) (listenerName string, listener loadbalancer.ListenerDetails) {
+func createDefaultBackendListenerDetails(targetBackendSetName string) (listenerName string, listener loadbalancer.ListenerDetails) {
 	listenerName = "DefaultBackend-http"
 	listener = loadbalancer.ListenerDetails{
 		// .defaultBackendSetName must not be null
@@ -97,7 +97,7 @@ func createDeafultBackendListenerDetails(targetBackendSetName string) (listenerN
 }
 
 // createSansVirtualHostListenerDetails creates ListenerDetails for default listener
-// that will handle requests that doesnot match Host value
+// that will handle requests that does not match Host value
 func createSansVirtualHostListenerDetails() (listenerName string, listener loadbalancer.ListenerDetails) {
 	listenerName = "Sans-VirtualHost-HTTP"
 	listener = loadbalancer.ListenerDetails{

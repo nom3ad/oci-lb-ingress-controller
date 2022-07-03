@@ -1,6 +1,6 @@
 package configholder
 
 type ConfigHolder interface {
-	GetComapartmentId() string
+	GetCompartmentId() string
 	GetSubnetIds() []string
 }

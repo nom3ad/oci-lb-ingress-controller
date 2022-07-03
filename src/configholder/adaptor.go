@@ -12,7 +12,7 @@ type configHolder struct {
 	_conf providercfg.Config
 }
 
-func (c *configHolder) GetComapartmentId() string {
+func (c *configHolder) GetCompartmentId() string {
 	return c._conf.CompartmentID
 }
 
