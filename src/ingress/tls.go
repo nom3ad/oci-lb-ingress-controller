@@ -37,12 +37,12 @@ func (cd *CertificateBundle) UniqueID() string {
 	for _, x := range cd.CACertificateChainX509 {
 		sig = append(sig, x.Signature...)
 	}
-	return utils.ByteAlphaNumericDigest(sig, 22)
+	return utils.ByteAlphaNumericDigest(sig, 24)
 }
 
 func (cd *CertificateBundle) Dump() string {
 	asStr := func(c x509.Certificate) string {
-		return fmt.Sprintf("S=%s|I=%s|%s<%s|#%s", c.Subject, c.Issuer, c.NotBefore.Format(time.RFC3339), c.NotAfter.Format(time.RFC3339), c.SerialNumber)
+		return fmt.Sprintf("S:%s|I:%s|%s<%s|#%s", c.Subject, c.Issuer, c.NotBefore.Format(time.RFC822), c.NotAfter.Format(time.RFC822), c.SerialNumber)
 	}
 	s := fmt.Sprintf("%s %s", strings.Join(cd.Domains, ","), asStr(cd.CertificateX509))
 	for _, x := range cd.CACertificateChainX509 {
