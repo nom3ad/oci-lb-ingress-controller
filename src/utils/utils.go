@@ -29,7 +29,7 @@ func PtrToString(value string) *string {
 	return &value
 }
 
-//PtrToBool returns a pointer to the provided bool
+// PtrToBool returns a pointer to the provided bool
 func PtrToBool(value bool) *bool {
 	return &value
 }
@@ -49,12 +49,12 @@ func PtrToUint(value uint) *uint {
 	return &value
 }
 
-//Float32 returns a pointer to the provided float32
+// Float32 returns a pointer to the provided float32
 func PtrToFloat32(value float32) *float32 {
 	return &value
 }
 
-//Float64 returns a pointer to the provided float64
+// Float64 returns a pointer to the provided float64
 func PtrToFloat64(value float64) *float64 {
 	return &value
 }
@@ -65,7 +65,7 @@ func ObjectHash(obj interface{}, length int) string {
 	return ByteAlphaNumericDigest(buf.Bytes(), length)
 }
 
-// ByteAlphaNumericDigest returns digest of given string (22 char length)
+// ByteAlphaNumericDigest returns digest of given string
 func ByteAlphaNumericDigest(bytes []byte, length int) string {
 	gen := func(bytes []byte) string {
 		hash := md5.Sum(bytes)

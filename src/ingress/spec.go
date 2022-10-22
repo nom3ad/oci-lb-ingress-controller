@@ -2,9 +2,6 @@ package ingress
 
 import (
 	"context"
-	"crypto/x509"
-	"encoding/pem"
-	"strings"
 
 	"github.com/nom3ad/oci-lb-ingress-controller/pkg/cloudprovider/providers/oci"
 	. "github.com/nom3ad/oci-lb-ingress-controller/pkg/cloudprovider/providers/oci"
@@ -128,39 +125,30 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 		if hostname == "" || secretName == "" {
 			return nil, errors.New("empty hostname or secretName")
 		}
-		secret := corev1.Secret{}
-		secretNsName := utils.AsNamespacedName(secretName, ing.Namespace)
-		if err := k8sClient.Get(ctx, secretNsName, &secret); err != nil {
-			return nil, errors.Wrapf(err, "Could not get secret %s", secretNsName)
-		}
-		if secret.Type != corev1.SecretTypeTLS {
-			// TODO: support any generic secrets with proper keys
-			return nil, errors.Errorf("secret %s is not of type TLS", secretName)
-		}
-		publicCertStr := string(secret.Data[corev1.TLSCertKey])
-		privateKeyStr := string(secret.Data[corev1.TLSPrivateKeyKey])
-		block, _ := pem.Decode([]byte(publicCertStr))
-		if block == nil {
-			return nil, errors.Errorf("Failed to decode tls certificate from secret %s", secretName)
-		}
-		cert, err := x509.ParseCertificate(block.Bytes)
+		crt, err := getCertificateBundle(ctx, ing.Namespace, secretName, k8sClient)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to parse tls certificate from secret %s", secretName)
+			return nil, err
 		}
-		certificateName := strings.ReplaceAll(secretNsName.String(), "/", "_") + "_" + utils.ByteAlphaNumericDigest(cert.Signature, 22)
+		certificateName := ing.Namespace + "_" + secretName + "_" + crt.UniqueID()
 		if _, found := certificateCollection[certificateName]; !found {
-			cert := loadbalancer.CertificateDetails{
+			logger.Sugar().With("certificateName", certificateName, "cert", crt).Debug("certificate")
+			if crt.CertificateX509.Issuer.String() == crt.CertificateX509.Subject.String() {
+				logger.Sugar().With("secretName", secretName, "issuer", crt.CertificateX509.Issuer.String()).Info("Certificate is self-signed")
+			}
+			if len(crt.CACertificateChainX509) == 0 {
+				logger.Sugar().With("secretName", secretName).Warn("No certificate chain is provided")
+			}
+			certDetails := loadbalancer.CertificateDetails{
 				CertificateName:   utils.PtrToString(certificateName),
-				PublicCertificate: &publicCertStr,
-				PrivateKey:        &privateKeyStr,
-				// CaCertificate: *string,
+				PublicCertificate: &crt.CertificatePem,
+				PrivateKey:        &crt.PrivateKeyPem,
+				CaCertificate:     crt.CACertificateChainPem,
 				// Passphrase: *string,
 				// TODO: support caCert and password, and validate data
 			}
-			certificateCollection[certificateName] = cert
-
+			certificateCollection[certificateName] = certDetails
 		}
-		details := loadbalancer.SslConfigurationDetails{
+		sslDetails := loadbalancer.SslConfigurationDetails{
 			CertificateName: &certificateName,
 			VerifyDepth:     utils.PtrToInt(1), //default value is not 0
 			// VerifyDepth: *int,
@@ -170,7 +158,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 			// Protocols: string,
 		}
 		// sslConfigDetailsCollection[certificateName] = details
-		return &details, nil
+		return &sslDetails, nil
 	}
 
 	namespace := ing.Namespace
