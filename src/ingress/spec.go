@@ -131,7 +131,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 		}
 		certificateName := ing.Namespace + "_" + secretName + "_" + crt.UniqueID()
 		if _, found := certificateCollection[certificateName]; !found {
-			logger.Sugar().With("certificateName", certificateName, "cert", crt).Debug("certificate")
+			logger.Sugar().With("certificateName", certificateName, "cert", crt.Dump()).Debug("certificate")
 			if crt.CertificateX509.Issuer.String() == crt.CertificateX509.Subject.String() {
 				logger.Sugar().With("secretName", secretName, "issuer", crt.CertificateX509.Issuer.String()).Info("Certificate is self-signed")
 			}

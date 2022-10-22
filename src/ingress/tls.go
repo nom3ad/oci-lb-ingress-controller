@@ -10,6 +10,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nom3ad/oci-lb-ingress-controller/src/utils"
 	"github.com/pkg/errors"
@@ -37,6 +38,17 @@ func (cd *CertificateBundle) UniqueID() string {
 		sig = append(sig, x.Signature...)
 	}
 	return utils.ByteAlphaNumericDigest(sig, 22)
+}
+
+func (cd *CertificateBundle) Dump() string {
+	asStr := func(c x509.Certificate) string {
+		return fmt.Sprintf("S=%s|I=%s|%s<%s|#%s", c.Subject, c.Issuer, c.NotBefore.Format(time.RFC3339), c.NotAfter.Format(time.RFC3339), c.SerialNumber)
+	}
+	s := fmt.Sprintf("%s %s", strings.Join(cd.Domains, ","), asStr(cd.CertificateX509))
+	for _, x := range cd.CACertificateChainX509 {
+		s = fmt.Sprintf("%s\t%s", s, asStr(x))
+	}
+	return s
 }
 
 func getExtension(c *x509.Certificate, id asn1.ObjectIdentifier) []pkix.Extension {
@@ -154,6 +166,15 @@ func getCertificateBundle(ctx context.Context, namespace, secretName string, k8s
 		}
 		cd.CACertificateChainX509 = certs
 		cd.CACertificateChainPem = &caPemStr
+	} else if len(certs) > 1 {
+		cd.CACertificateChainX509 = certs[1:]
+		for _, c := range cd.CACertificateChainX509 {
+			pemBlock := pem.Block{
+				Type:  "CERTIFICATE",
+				Bytes: c.Raw,
+			}
+			caPemStr += string(pem.EncodeToMemory(&pemBlock))
+		}
 	}
 	return &cd, nil
 }
