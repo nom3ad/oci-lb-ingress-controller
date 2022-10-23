@@ -51,7 +51,7 @@ func createListenerDetails(ing *networking.Ingress, hostnameDetails *loadbalance
 }
 
 func createListenerDetailsAndRulesetDetailsForHTTPSRedirect(hostnameNames []string) (rulesetName string, ruleSet loadbalancer.RuleSetDetails, listenerName string, listener loadbalancer.ListenerDetails) {
-	rulesetName = "https_301_redirection" // ^[a-zA-Z_][a-zA-Z_0-9]*$
+	rulesetName = "https_redirection" // ^[a-zA-Z_][a-zA-Z_0-9]*$
 	ruleSet = loadbalancer.RuleSetDetails{
 		Items: []loadbalancer.Rule{
 			loadbalancer.RedirectRule{
@@ -68,7 +68,7 @@ func createListenerDetailsAndRulesetDetailsForHTTPSRedirect(hostnameNames []stri
 					Path:     utils.PtrToString("/{path}"),
 					Query:    utils.PtrToString("?{query}"),
 				},
-				ResponseCode: utils.PtrToInt(301),
+				ResponseCode: utils.PtrToInt(308),
 			},
 		},
 	}
