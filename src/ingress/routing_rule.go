@@ -12,7 +12,7 @@ import (
 	networking "k8s.io/api/networking/v1"
 )
 
-func createDeafultBackendRoutingRule(backendSetName string) (*loadbalancer.RoutingRule, error) {
+func createDefaultBackendRoutingRule(backendSetName string) (*loadbalancer.RoutingRule, error) {
 	ruleName := "default-backend-route"
 	condition := fmt.Sprintf("all(http.request.url.path sw '%s')", "/")
 	return &loadbalancer.RoutingRule{
@@ -81,7 +81,7 @@ func createRoutingRule(ingresPath networking.HTTPIngressPath, backendSetName str
 	}, nil
 }
 
-func createHostnameCondition(host string) string {
+func createHostnameCondition(hostname string) string {
 	// Form Kubernetes documentation:
 	// .........
 	// Host is the fully qualified domain name of a network host, as defined by RFC 3986.
@@ -101,13 +101,16 @@ func createHostnameCondition(host string) string {
 	//   2. If Host is a wildcard, then the request matches this rule if the http host header is to equal to the suffix (removing the first label) of the wildcard rule.
 	// .........
 
-	if strings.HasPrefix(host, "*.") {
+	if strings.HasPrefix(hostname, "*.") {
 		// return fmt.Sprintf("http.request.headers[(i 'Host')] ew (i '%s')", host[2:])
 		//XXX: OCI LB does not support ew/sw matchers on Map Type values. Gets an err: invalid operand types for matcher IREndsWithMatcher, left: IRStringListValue, right: IRStringValue
 		// But it would be okay to not have Host header matching rule, because we have listener configured with correct wildcard hostname
 		return ""
 	}
-	return fmt.Sprintf("http.request.headers[(i 'Host')] eq (i '%s')", host)
+	hostHeaderMatch := func(h string) string {
+		return fmt.Sprintf("http.request.headers[(i 'Host')] eq (i '%s')", h)
+	}
+	return fmt.Sprintf("any(%s, %s, %s)", hostHeaderMatch(hostname), hostHeaderMatch(hostname+":443"), hostHeaderMatch(hostname+":80"))
 }
 
 func processImplementationSpecificPath(pathValue string) (string, error) {

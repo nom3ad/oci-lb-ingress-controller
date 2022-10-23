@@ -284,7 +284,7 @@ func NewIngressLBSpec(config configholder.ConfigHolder, ing *networking.Ingress,
 		listenerName, listener := createDefaultBackendListenerDetails(backendSetName)
 		listeners[listenerName] = listener
 
-		defaultBackendRoutingRule, err := createDeafultBackendRoutingRule(backendSetName)
+		defaultBackendRoutingRule, err := createDefaultBackendRoutingRule(backendSetName)
 		if err != nil {
 			return nil, err
 		}

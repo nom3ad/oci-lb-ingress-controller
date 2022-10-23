@@ -27,10 +27,12 @@ build:
 
 .PHONY: run
 run:
-	@CGO_ENABLED=0 \
+	@set -e; \
+	args=${args:-'-config ./config.yml -ingress-class oci -kubeconfig ~/.kube/config'}\
+	CGO_ENABLED=0 \
 	ZAP_DEV_LOGGER=true \
 	ZAP_LOG_LEVEL=debug \
-	go run -ldflags="$(LDFLAGS)" cmd/oci-lb-ingress-controller/main.go -config ./config.yml -ingress-class oci -kubeconfig ~/.kube/config
+	go run -ldflags="$(LDFLAGS)" cmd/oci-lb-ingress-controller/main.go $$args
 
 .PHONY: image
 image: build
