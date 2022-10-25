@@ -44,9 +44,9 @@ func (cd *CertificateBundle) Dump() string {
 	asStr := func(c x509.Certificate) string {
 		return fmt.Sprintf("S:%s|I:%s|%s<%s|#%s", c.Subject, c.Issuer, c.NotBefore.Format(time.RFC822), c.NotAfter.Format(time.RFC822), c.SerialNumber)
 	}
-	s := fmt.Sprintf("%s %s", strings.Join(cd.Domains, ","), asStr(cd.CertificateX509))
+	s := fmt.Sprintf("[%s] [%s]", strings.Join(cd.Domains, ","), asStr(cd.CertificateX509))
 	for _, x := range cd.CACertificateChainX509 {
-		s = fmt.Sprintf("%s\t%s", s, asStr(x))
+		s = fmt.Sprintf("%s  [%s]", s, asStr(x))
 	}
 	return s
 }
